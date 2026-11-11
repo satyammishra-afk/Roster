@@ -46,6 +46,7 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 .strip s.P{background:var(--p)}
 .strip s.N{background:var(--n)}
 .strip s.O{background:var(--o)}
+.strip s.A{background:var(--o)}
 .hl{outline:2px solid var(--ac);outline-offset:1px}
 .strip s.hol{box-shadow:inset 0 -4px 0 var(--ac)}
 .note{font-size:12px;color:var(--mu);margin:0 0 10px}
@@ -77,17 +78,14 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 <div class="cards">
   <div class="card"><b id="c1">0</b><span>People shown</span></div>
   <div class="card"><b id="c2">0</b><span>Average days worked</span></div>
-  <div class="card"><b id="c4">0</b><span>Leave / comp-off days</span></div>
+  <div class="card"><b id="c4">0</b><span>Leave / absent days</span></div>
   <div class="card"><b id="c5">20</b><span>Total working days in Nov</span></div>
 </div>
 
 <p class="legend">
   <span><i style="background:var(--w)"></i>Working</span>
-  <span><i style="background:var(--n)"></i>Non-working day</span>
-  <span><i style="background:var(--o)"></i>Off</span>
-  <span><i style="background:var(--s)"></i>SL (sick leave)</span>
-  <span><i style="background:var(--p)"></i>PL (paid leave)</span>
-  <span><i style="background:var(--c)"></i>Comp-off</span>
+  <span><i style="background:var(--o)"></i>Not working (leave / off)</span>
+  <span><i style="background:var(--n)"></i>Company off day (not working)</span>
 </p>
 
 <p class="note"><i></i>Company off days (marked with a blue underline): all Sundays, 2nd &amp; 4th Saturday (14, 28 Nov), Diwali holiday (8, 9, 10 Nov), Guru Nanak Jayanti (24 Nov).</p>
@@ -112,78 +110,15 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 
 <script>
 // ============ SETTINGS ============
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqW6-ZOimhayTrKfbgyS2JDzBvg_RhBiPtkGKz0FGeuMmTpuCJneOLylkmUBksYm2d6VdY57-VmBNC/pub?gid=2110293859&single=true&output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAlI16aKszHmDK1vo9Or1sGVv-6enSi__VzWNIQUHYVkuN6JWMUv32t3GeYzoiG7Vhz3cZlPDOY4hZ/pub?output=csv";
 const REFRESH_MINUTES = 2;   // page re-checks the sheet this often
 const DAYS = 30;             // November has 30 days
 // ==================================
 
-// Fallback data, used only if the Google Sheet cannot be reached
-let D = [
-  {"n":"Rushabh","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWWCCOOOPWWNNWWWWWWNCOWWWNNW"},
-  {"n":"Shyam","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWCWWOOOPPPNNWWWWWWWCWWWWWWC"},
-  {"n":"Bhavika","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"WWCWWWWOOOWWWNNWWWCWWN-OWCWWWW"},
-  {"n":"Priyal","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"N------OOO---NN------N-O---NN-"},
-  {"n":"Vatsal","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWWWCOOOWWWWWCWWWWWNWOWWWNNW"},
-  {"n":"Piyush","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWWWWOOO---NN--WWWWNWOWWWWNW"},
-  {"n":"Om","r":"Mumbai","l":"Sanjay","t":"Para Planner","d":"NWWWWCWOOOWWWNNWWWWWWWWOWWWWN-"},
-  {"n":"Nayan","r":"Mumbai","l":"Sanjay","t":"Para Planner","d":"WWWWWWCOOOWWWWNCWWWWWWCOWWWWWW"},
-  {"n":"Saurav","r":"Mumbai","l":"Sanjay","t":"Para Planner","d":"NWWWWWWOOOWWWNNWWWCCCNCOCCCNNC"},
-  {"n":"Aman B","r":"Mumbai","l":"Sanjay","t":"Para Planner","d":"NCWWWWWOOOCCWNNWWWWWWWWOWWWWW-"},
-  {"n":"Mayank","r":"Mumbai","l":"Animesh","t":"Advisor","d":"NWWWWWWOOOWWWNNPPPPPPNPOPPPWNW"},
-  {"n":"Krishna","r":"Mumbai","l":"Animesh","t":"Advisor","d":"WWCWWWWOOOCWWNNWWWWWWWWOWWCNNW"},
-  {"n":"Nilesh M","r":"Mumbai","l":"Animesh","t":"Advisor","d":"WWWWWCCOOOWWWNNWWCWWCNCOWWWWWW"},
-  {"n":"Dev","r":"Mumbai","l":"Animesh","t":"Advisor","d":"NSWWWOOOOOOOOOOOOOOOOOWWWWWWWW"},
-  {"n":"Anulekha","r":"Mumbai","l":"Animesh","t":"Advisor","d":"NWWWWWWWOWWWWNNWW-WWWWWOWWWWN-"},
-  {"n":"Divyanshu","r":"Mumbai","l":"Animesh","t":"Advisor","d":"NWWWWWWOOOCWWWWWWWWWWNCOWWWNNW"},
-  {"n":"Rommel","r":"Mumbai","l":"Animesh","t":"Advisor","d":"NWWWWWWOOOWWWNNWWWWWWNWOWWWNNW"},
-  {"n":"Siddesh","r":"Mumbai","l":"Sanjay","t":"ED","d":"NPPPPPPOOOPPPNNWWWWWCNWWWWWWNC"},
-  {"n":"Sahil","r":"Mumbai","l":"Sanjay","t":"ED","d":"WCWWWWWOOOWWWNNPWWWWCWWOWWWNNW"},
-  {"n":"Pratik","r":"Mumbai","l":"Sanjay","t":"ED","d":"NWWWWWWOOOPWWNWWWWCWWNWOWWWNWC"},
-  {"n":"Nidhi","r":"Mumbai","l":"Sanjay","t":"ED","d":"NWWWWWWOOOWWWWNWWWWWWNWOWWCNNW"},
-  {"n":"Siddharth","r":"Thane","l":"Akhil","t":"Advisor","d":"WWWWWCP---WWWWNWWWWWWNWWWWWWNW"},
-  {"n":"Ankita","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Urmil","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWWWWWWWWWNWWWWWWNW"},
-  {"n":"Jayesh","r":"Thane","l":"Akhil","t":"Advisor","d":"WWWCWWW---WWWWWWWCWWWNCNWWWNWW"},
-  {"n":"Minakshi","r":"Thane","l":"Akhil","t":"Advisor","d":"WCWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Jatin","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Aarti","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Tejas","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Sagar","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNCWWWWNNW"},
-  {"n":"Runali","r":"Thane","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Priyanka D","r":"Thane","l":"Akhil","t":"ED","d":"NWWWWWW---WWWWWCCWWWWNWNWWWWNC"},
-  {"n":"Arman","r":"Gurgaon","l":"Akhil","t":"Advisor","d":"NWWWWWW---PWWWNCWWWWWNWNWWWWNC"},
-  {"n":"Neeraj","r":"Gurgaon","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWWNWNWWWNNW"},
-  {"n":"Tapesh","r":"Gurgaon","l":"Akhil","t":"Advisor","d":"WWWWWWP---CWWNNWWWWWWNWWWWWNNC"},
-  {"n":"Pawan","r":"Gurgaon","l":"Akhil","t":"Advisor","d":"NWWWWWP---WWWWWWWWWWWWWWWWWWWW"},
-  {"n":"Yash","r":"Gurgaon","l":"Akhil","t":"Advisor","d":"NWWWWWP---WWWNNWWWWWWNWWWWWNNC"},
-  {"n":"Rishabh","r":"Noida","l":"Akhil","t":"Advisor","d":"WWWWWWW---WWWNNCCWWWWWWWCCWNNW"},
-  {"n":"Harshit","r":"Noida","l":"Akhil","t":"Advisor","d":"NWWWWWW---WWWNNWWWWWPNPNWWWWNC"},
-  {"n":"Sohil","r":"Noida","l":"Akhil","t":"Advisor","d":"WWWWWCP---PWWWNWWCWWWNWWWCWWNW"},
-  {"n":"Prachi","r":"Gurgaon","l":"","t":"ED","d":"NWWWWWP---WWWWNWWWWWWNWWWWCNNP"},
-  {"n":"Shubham","r":"Noida","l":"","t":"ED","d":"NWWWWWW---PWWNNWWWWWWNPNPPPNNW"},
-  {"n":"Jayed","r":"Bangalore","l":"Rajani","t":"Advisor","d":"WWWWWWWOOOCCCWWWWWWWWNCOWWWNN-"},
-  {"n":"Pritam","r":"Bangalore","l":"Rajani","t":"Advisor","d":"NWWWWWWOOOWWWNNWWWWWWNWOWWWNNW"},
-  {"n":"Abhishek Varma","r":"Bangalore","l":"Rajani","t":"Advisor","d":"NWWWWWWOOOWWWWNWCWWWWNWOWWWNNW"},
-  {"n":"Vardhaman","r":"Bangalore","l":"Rajani","t":"Advisor","d":"NWWWWWWOOOWWWWNCWWWWWNWOWWWWNC"},
-  {"n":"Shiv","r":"Bangalore","l":"Rajani","t":"Para Planner","d":"NWWWWWWOOOWWWWNWWWWWWNWOWCWNNW"},
-  {"n":"Nidhi","r":"Bangalore","l":"Rajani","t":"ED","d":"WWWWWWCOOOPWWWWWWWWWCNWOCWWWNC"},
-  {"n":"Sibon","r":"Bangalore","l":"Rajani","t":"ED","d":"WWWWWCWOOOWWCWNWWWWWWNWOWWCNWW"},
-  {"n":"Karan","r":"Pune","l":"Manju","t":"Advisor","d":"NCWWWWWOOOWWWWNCWWWWWNWWWWWNWW"},
-  {"n":"Akshat","r":"Pune","l":"Manju","t":"Advisor","d":"WSCWWWWOOOWWWNWWWWWCWWWOWWWWNC"},
-  {"n":"Kartik","r":"Pune","l":"Manju","t":"Advisor","d":"WWWWWWWOOOPPPNNWWWWWWNWWWWWNNW"},
-  {"n":"Arnab","r":"Pune","l":"Manju","t":"ED","d":"NWWWWWWOOOWWWNNWWWWWWNWWWWWNNW"},
-  {"n":"Bhavana","r":"Pune","l":"Manju","t":"Para Planner","d":"NWWWWWPOOOPPPNNWWWWWWNWWWWWNNW"},
-  {"n":"Tinku","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"WWWWWWWOOOCWWWWWCWWCWNWWCWWWNC"},
-  {"n":"Nischay","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"NWWWWWWOOOCWWWNWWWCWWWCOWWWNWW"},
-  {"n":"Athik","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"NWWWWWWOOOCWWWWCWWWWWWCOWWWWNC"},
-  {"n":"Pranav","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"NCWWWWWOOOWWWWWCCWWWWWCOWWWWNC"},
-  {"n":"Syed","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"WWWWWWCOOOCWWWWWWWWWWWWWWWWWWW"},
-  {"n":"Dheeraj","r":"Hyderabad","l":"Anuj","t":"Advisor","d":"NWWWWWWOOOWWWWNWWWWCWNWOWWWWNC"},
-  {"n":"Prachi","r":"Hyderabad","l":"Anuj","t":"ED","d":"NWWWWWWOOOCWWWWCWWWWWWCWWWWWNC"},
-  {"n":"Karishma","r":"Hyderabad","l":"Anuj","t":"ED","d":"NWWWWWWOOOWWWWWCWWWWWWCWWWWWNC"}
-];
+// Roster data is loaded live from the Google Sheet
+let D = [];
 
-const LBL = {W:'Working', S:'Sick leave', C:'Comp-off', P:'Paid leave', N:'Non-working day', O:'Off', '-':'Not scheduled'};
+const LBL = {W:'Working', S:'Sick leave', C:'Comp-off', P:'Paid leave', N:'Company off day', A:'Not working (leave / off)', O:'Off', '-':'Not scheduled'};
 const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const dn = i => DN[i % 7]; // Nov 1, 2026 is a Sunday
 
@@ -210,7 +145,7 @@ function prepData(){
   D.forEach(p => {
     p.d = (p.d || '').padEnd(DAYS, '-').slice(0, DAYS).toUpperCase();
     p.w  = [...p.d].filter(x => x === 'W').length;
-    p.lv = [...p.d].filter(x => 'SCP'.includes(x)).length;
+    p.lv = [...p.d].filter(x => 'SCPA'.includes(x)).length;
     p.o  = [...p.d].filter(x => x === 'O' || x === 'N').length;
     p.t2 = p.t === 'Para Planner' ? 'Para' : p.t;
   });
@@ -265,7 +200,7 @@ function render(){
         `<s class="${esc(c)}${offReason(i) ? ' hol' : ''}${d !== '' && +d === i ? ' hl' : ''}" title="${i + 1} Nov ${dn(i)}: ${LBL[c] || esc(c)}${offReason(i) ? ' · ' + offReason(i) : ''}"></s>`
       ).join('')}</div></td>
     </tr>`).join('')
-    : '<tr><td colspan="8" class="empty">No one matches these filters.</td></tr>';
+    : '<tr><td colspan="8" class="empty">' + (D.length ? 'No one matches these filters.' : 'Loading roster…') + '</td></tr>';
 }
 
 ['reg', 'lead', 'role', 'date'].forEach(i => $(i).onchange = render);
@@ -279,45 +214,187 @@ document.querySelectorAll('th[data-k]').forEach(h => h.onclick = () => {
 });
 
 // ---------- Google Sheet loading ----------
-function getVal(row, keys){
-  const found = Object.keys(row).find(k => keys.includes(k.trim().toLowerCase()));
-  return found ? String(row[found] || '').trim() : '';
-}
+const clean = v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
 
-// Works with headers like: 1, 01, Day 1, 1 Nov, 1-Nov, Nov 1, 1 Nov Sun, 01/11/2026
+// Works with headers like: 1, 01, Day 1, 1 Nov, 1-Nov, Nov 1, 1 Nov Sun, Sun 1, 01/11/2026, 2026-11-01
 function dayFromHeader(h){
-  const c = h.trim().toLowerCase();
+  const c = clean(h).toLowerCase();
   let m;
   if ((m = c.match(/^(?:day\s*)?(\d{1,2})$/))) return +m[1];
-  if ((m = c.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-\/,]*nov/))) return +m[1];
-  if ((m = c.match(/^nov\w*[\s\-\/,]*(\d{1,2})/))) return +m[1];
-  if ((m = c.match(/^(\d{1,2})\/11(?:\/|$)/))) return +m[1];
+  if ((m = c.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-\/,.]*nov/))) return +m[1];
+  if ((m = c.match(/^nov\w*[\s\-\/,.]*(\d{1,2})/))) return +m[1];
+  if ((m = c.match(/^(?:mon|tue|wed|thu|fri|sat|sun)\w*[\s,.\-]*(\d{1,2})(?:\D|$)/))) return +m[1];
+  if ((m = c.match(/^(\d{1,2})[\s,.\-]*(?:mon|tue|wed|thu|fri|sat|sun)/))) return +m[1];
+  if ((m = c.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)) && +m[2] === 11) return +m[3];
+  if ((m = c.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/))) {
+    if (+m[2] === 11) return +m[1];   // dd/mm/yyyy
+    if (+m[1] === 11) return +m[2];   // mm/dd/yyyy
+  }
   return null;
 }
 
-function rowToPerson(row){
-  const n = getVal(row, ['name', 'advisor', 'employee', 'person', 'n']);
-  const r = getVal(row, ['region', 'city', 'location', 'r']);
-  const t = getVal(row, ['role', 'designation', 't']);
-  const l = getVal(row, ['cluster head', 'lead', 'manager', 'tl', 'l']);
+const WORDS = {
+  'WORKING':'W','WORK':'W','PRESENT':'P_','SL':'S','SICK':'S','SICK LEAVE':'S',
+  'PL':'P','PAID LEAVE':'P','LEAVE':'P','COMP-OFF':'C','COMP OFF':'C','COMPOFF':'C','CO':'C',
+  'OFF':'O','WO':'O','WEEKLY OFF':'O','HOLIDAY':'O','H':'O','NON-WORKING':'N','NON WORKING':'N','NWD':'N','NW':'N'
+};
+function cellToCode(v){
+  const u = clean(v).toUpperCase();
+  if (!u) return '-';
+  if (WORDS[u] && WORDS[u].length === 1) return WORDS[u];
+  return 'WSCPNO-'.includes(u[0]) ? u[0] : '-';
+}
 
-  let d = getVal(row, ['schedule', 'roster', 'd']);
+function metaKind(h){
+  const c = clean(h).toLowerCase();
+  if (!c) return null;
+  if (/cluster|lead|manager|\btl\b|head|supervisor/.test(c)) return 'l';
+  if (/region|city|location|branch|zone/.test(c)) return 'r';
+  if (/role|designation|position|title/.test(c)) return 't';
+  if (/schedule|roster/.test(c)) return 'd';
+  if (/name|advisor|employee|person/.test(c) && !/cluster|lead|manager/.test(c)) return 'n';
+  return null;
+}
 
-  // No single schedule column? Stitch together the daily columns.
-  if (d.length < 5) {
-    const dayKeys = {};
-    Object.keys(row).forEach(k => {
-      const day = dayFromHeader(k);
-      if (day && day >= 1 && day <= DAYS && !(day in dayKeys)) dayKeys[day] = k;
+function parseRoster(csv){
+  const res = Papa.parse(csv, { skipEmptyLines: true });
+  const rows = (res.data || []).filter(r => r.some(c => clean(c)));
+  if (!rows.length) throw new Error('The sheet is empty');
+
+  // Find the header row: the first of the top 15 rows that has a name column and a region/role column
+  let hi = -1, map = null;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const m = {}; const days = {};
+    rows[i].forEach((h, ci) => {
+      const k = metaKind(h);
+      if (k && !(k in m)) m[k] = ci;
+      const dd = dayFromHeader(h);
+      if (dd && dd >= 1 && dd <= DAYS && !(dd in days)) days[dd] = ci;
     });
-    const chars = [];
-    for (let day = 1; day <= DAYS; day++) {
-      const val = dayKeys[day] ? String(row[dayKeys[day]] || '').trim().toUpperCase() : '';
-      chars.push(val ? val[0] : '-');
-    }
-    d = chars.some(c => c !== '-') ? chars.join('') : '';
+    if ('n' in m && ('r' in m || 't' in m || 'l' in m) && ('d' in m || Object.keys(days).length >= 5)) { hi = i; map = { m, days }; break; }
+    if ('n' in m && ('r' in m || 't' in m)) { if (hi < 0) { hi = i; map = { m, days }; } }
   }
-  return { n, r, t, l, d };
+  if (hi < 0) {
+    const first = rows[0].map(clean).filter(Boolean).slice(0, 8).join(' | ');
+    throw new Error('Could not find the header row. First row reads: ' + first);
+  }
+
+  const { m } = map; let { days } = map;
+
+  // No recognisable day headers? Use the 30 columns right after the last info column.
+  if (!('d' in m) && Object.keys(days).length < 5) {
+    const start = Math.max(...Object.values(m)) + 1;
+    days = {};
+    for (let d = 1; d <= DAYS; d++) days[d] = start + d - 1;
+  }
+
+  const out = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i];
+    const n = clean(r[m.n]);
+    if (!n) continue;
+    let d = '';
+    if ('d' in m) d = clean(r[m.d]).replace(/\s+/g, '').toUpperCase();
+    if (d.length < 5) {
+      const chars = [];
+      for (let day = 1; day <= DAYS; day++) chars.push(days[day] != null ? cellToCode(r[days[day]]) : '-');
+      d = chars.join('');
+    }
+    if (!/[WSCPNO]/.test(d)) continue;
+    out.push({
+      n, r: 'r' in m ? clean(r[m.r]) : '', t: 't' in m ? clean(r[m.t]) : '',
+      l: 'l' in m ? clean(r[m.l]) : '', d
+    });
+  }
+  if (!out.length) {
+    const hdr = rows[hi].map(clean).filter(Boolean).slice(0, 10).join(' | ');
+    throw new Error('Header found (' + hdr + ') but no roster rows had day data');
+  }
+  return out;
+}
+
+
+// ---------- Sheet layout: one ROW per date, one COLUMN per person ----------
+// A person's name in a date row means "working that day"; blank means not working.
+// Fix anything the sheet itself cannot say:
+const LEAD_BY_REGION_ROLE = { 'Mumbai|ED': 'Sanjay', 'Gurgaon|Advisor': 'Akhil', 'Noida|Advisor': 'Akhil' };
+const REGION_ALIASES = { 'blr': 'Bangalore', 'bengaluru': 'Bangalore', 'hyd': 'Hyderabad' };
+const ROLE_OVERRIDES = { 'om|Mumbai': 'Para Planner', 'nayan|Mumbai': 'Para Planner', 'saurav|Mumbai': 'Para Planner', 'aman b|Mumbai': 'Para Planner' };
+
+function normRole(v){
+  const c = clean(v).toLowerCase();
+  if (!c) return '';
+  if (c.includes('para')) return 'Para Planner';
+  if (c === 'ed' || c.includes('executive')) return 'ED';
+  if (c.includes('advisor')) return 'Advisor';
+  return clean(v);
+}
+
+function dateRowDay(v){
+  const c = clean(v);
+  let m;
+  if ((m = c.match(/^(\d{1,2})[\-\/ ]([A-Za-z]{3,})[\-\/ ,]+(\d{4})$/))) return m[2].toLowerCase().startsWith('nov') ? +m[1] : null;
+  if ((m = c.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) return +m[2] === 11 ? +m[1] : null;
+  if ((m = c.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return +m[2] === 11 ? +m[3] : null;
+  return null;
+}
+
+function parseByDate(csv){
+  const res = Papa.parse(csv, { skipEmptyLines: false });
+  const rows = (res.data || []).filter(r => r.some(c => clean(c)));
+  const hi = rows.findIndex(r => clean(r[0]).toLowerCase() === 'date');
+  if (hi < 0) return null;
+
+  // The date rows
+  const dayRows = {};
+  let firstDateRow = -1;
+  for (let i = hi + 1; i < rows.length; i++) {
+    const day = dateRowDay(rows[i][0]);
+    if (day && day >= 1 && day <= DAYS) { dayRows[day] = rows[i]; if (firstDateRow < 0) firstDateRow = i; }
+  }
+  if (firstDateRow < 0) return null;
+
+  // Rows between the first header row and the first date: roles row and names row (names row has the most cells)
+  const between = [];
+  for (let i = hi + 1; i < firstDateRow; i++) between.push(i);
+  if (!between.length) return null;
+  const count = i => rows[i].slice(3).filter(c => clean(c)).length;
+  const nameRow = between.reduce((a, b) => count(b) > count(a) ? b : a);
+  const roleRow = between.find(i => i !== nameRow && count(i) > 0);
+
+  const groupCells = rows[hi], nameCells = rows[nameRow], roleCells = roleRow != null ? rows[roleRow] : [];
+  const width = Math.max(groupCells.length, nameCells.length, roleCells.length);
+
+  const people = [];
+  let region = '', lead = '', role = '', plain = false;
+  for (let c = 3; c < width; c++) {
+    const g = clean(groupCells[c]);
+    if (g) {
+      const parts = g.split(/\s+[-–—]\s+/);
+      if (parts.length > 1) { lead = parts[0]; region = parts.slice(1).join(' - '); plain = false; }
+      else { lead = ''; region = g; plain = true; }
+      region = REGION_ALIASES[region.toLowerCase()] || region;
+    }
+    const rl = normRole(roleCells[c]);
+    if (rl) role = rl;
+
+    const name = clean(nameCells[c]);
+    if (!name) continue;
+
+    let pr = ROLE_OVERRIDES[name.toLowerCase() + '|' + region] || role;
+    let pl = lead;
+    if (!pl) pl = LEAD_BY_REGION_ROLE[region + '|' + pr] || '';
+
+    let d = '';
+    for (let i = 0; i < DAYS; i++) {
+      const row = dayRows[i + 1];
+      if (!row) { d += '-'; continue; }
+      d += clean(row[c]) ? 'W' : (offReason(i) ? 'N' : 'A');
+    }
+    people.push({ n: name, r: region, t: pr, l: pl, d });
+  }
+  if (!people.length) throw new Error('Date layout found, but no people names were found in the name row');
+  return people;
 }
 
 let loadedOnce = false;
@@ -330,7 +407,9 @@ async function fetchCsvText(){
     SHEET_CSV_URL,
     SHEET_CSV_URL + bust,
     'https://corsproxy.io/?' + encodeURIComponent(SHEET_CSV_URL + bust),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_CSV_URL + bust)
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_CSV_URL + bust),
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(SHEET_CSV_URL + bust),
+    'https://thingproxy.freeboard.io/fetch/' + SHEET_CSV_URL + bust
   ];
   let lastErr;
   for (const url of attempts) {
@@ -348,31 +427,19 @@ async function fetchCsvText(){
 async function fetchSheetData(){
   try {
     const csv = await fetchCsvText();
-
-    Papa.parse(csv, {
-      header: true,
-      skipEmptyLines: true,
-      complete: results => {
-        const parsed = (results.data || []).map(rowToPerson).filter(p => p.n && p.d);
-        if (parsed.length) {
-          D = parsed;
-          prepData();
-          render();
-          loadedOnce = true;
-          setStatus('live', 'Live from Google Sheet · ' + parsed.length + ' people · updated ' + new Date().toLocaleTimeString());
-        } else {
-          throw new Error('No usable rows found in the sheet');
-        }
-      },
-      error: err => { throw err; }
-    });
+    const parsed = parseByDate(csv) || parseRoster(csv);
+    D = parsed;
+    prepData();
+    render();
+    loadedOnce = true;
+    setStatus('live', 'Live from Google Sheet · ' + parsed.length + ' people · updated ' + new Date().toLocaleTimeString());
   } catch (err) {
     console.warn('Could not load Google Sheet data.', err);
-    setStatus('err', (loadedOnce ? 'Could not refresh – showing last loaded data' : 'Sheet unreachable – showing saved backup data') + ' (' + (err && err.message ? err.message : 'unknown error') + ')');
+    setStatus('err', (loadedOnce ? 'Could not refresh – showing last loaded data' : 'Sheet problem – no data loaded') + ' (' + (err && err.message ? err.message : 'unknown error') + ')');
   }
 }
 
-// Start with backup data so the page is never empty, then load the live sheet
+// Load the live sheet
 prepData();
 render();
 setStatus('', 'Loading live data…');
