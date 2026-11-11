@@ -1,55 +1,117 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Advisor Roster – November 2026</title>
-<!-- CSV Parser Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#5f6b7a;--bd:#e1e5ea;--ac:#2457d6;--w:#2e9e5b;--s:#f5d90a;--c:#e06666;--p:#3c78d8;--n:#c9ced6;--o:#9b5de5;--e:#eef0f3}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d222a;--tx:#e8ebef;--mu:#9aa6b5;--bd:#2d343e;--ac:#7aa2ff;--n:#4a525e;--e:… Read more
-4:28 pm
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Advisor Roster – November 2026</title>
-<!-- CSV Parser Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#5f6b7a;--bd:#e1e5ea;--ac:#2457d6;--w:#2e9e5b;--s:#f5d90a;--c:#e06666;--p:#3c78d8;--n:#c9ced6;--o:#9b5de5;--e:#eef0f3}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d222a;--tx:#e8ebef;--mu:#9aa6b5;--bd:#2d343e;--ac:#7aa2ff;--n:#4a525e;--e:#262c35}}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
-h1{font-size:22px;margin:0 0 2px}.sub{color:var(--mu);margin:0 0 14px}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:var(--mu);margin:0 0 6px}
+.status{font-size:12px;color:var(--mu);margin:0 0 14px}
+.status b{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--n);margin-right:6px;vertical-align:0}
+.status.live b{background:var(--w)}
+.status.err b{background:var(--c)}
 .bar{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
 .bar label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px;flex:1 1 140px}
 select,input{font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
 button{font:inherit;padding:8px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);cursor:pointer;align-self:flex-end}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}.card b{display:block;font-size:24px}.card span{font-size:12px;color:var(--mu)}
-.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mu);margin:0 0 10px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.card b{display:block;font-size:24px}
+.card span{font-size:12px;color:var(--mu)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mu);margin:0 0 10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
 .wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px}
-table{border-collapse:collapse;width:100%;min-width:900px}th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
+table{border-collapse:collapse;width:100%;min-width:900px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
 th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:sticky;top:0;background:var(--card)}
-.tag{padding:2px 8px;border-radius:99px;font-size:12px;background:var(--e)}.ED{background:#ffe3c2;color:#7a3e00}.Advisor{background:#d6e4ff;color:#12307a}.Para{background:#e6dcf7;color:#43257a}
-.days{font-weight:700;font-size:17px;min-width:28px;display:inline-block}.meter{display:inline-block;width:70px;height:7px;background:var(--e);border-radius:4px;vertical-align:middle;margin-left:6px}.meter u{display:block;height:100%;background:var(--w);border-radius:4px}
-.strip{display:flex;gap:2px}.strip s{width:11px;height:20px;border-radius:2px;background:var(--e);text-decoration:none}
-.strip s.W{background:var(--w)}.strip s.S{background:var(--s)}.strip s.C{background:var(--c)}.strip s.P{background:var(--p)}.strip s.N{background:var(--n)}.strip s.O{background:var(--o)}
-.hl{outline:2px solid var(--ac);outline-offset:1px}.empty{padding:24px;text-align:center;color:var(--mu)}
-.dates{display:flex;gap:2px;font-size:9px;color:var(--mu);padding:0 10px 6px}.dates span{width:11px;text-align:center}
-</style></head><body>
+.tag{padding:2px 8px;border-radius:99px;font-size:12px;background:var(--e)}
+.ED{background:#ffe3c2;color:#7a3e00}
+.Advisor{background:#d6e4ff;color:#12307a}
+.Para{background:#e6dcf7;color:#43257a}
+.days{font-weight:700;font-size:17px;min-width:28px;display:inline-block}
+.meter{display:inline-block;width:70px;height:7px;background:var(--e);border-radius:4px;vertical-align:middle;margin-left:6px}
+.meter u{display:block;height:100%;background:var(--w);border-radius:4px}
+.strip{display:flex;gap:2px}
+.strip s{width:11px;height:20px;border-radius:2px;background:var(--e);text-decoration:none}
+.strip s.W{background:var(--w)}
+.strip s.S{background:var(--s)}
+.strip s.C{background:var(--c)}
+.strip s.P{background:var(--p)}
+.strip s.N{background:var(--n)}
+.strip s.O{background:var(--o)}
+.hl{outline:2px solid var(--ac);outline-offset:1px}
+.empty{padding:24px;text-align:center;color:var(--mu)}
+</style>
+</head>
+<body>
 <h1>Advisor Roster – November 2026</h1>
 <p class="sub">See who is working and how many days. Use the filters to pick a region, role or a single date.</p>
-<div class="bar">
-<label>Region<select id="reg"></select></label>
-<label>Role<select id="role"><option value="">All roles</option><option>ED</option><option>Advisor</option><option>Para Planner</option></select></label>
-<label>Who is working on<select id="date"><option value="">Any date</option></select></label>
-<label>Search name<input id="q" placeholder="Type a name"></label>
-<button id="clr">Reset</button></div>
-<div class="cards"><div class="card"><b id="c1">0</b><span>People shown</span></div><div class="card"><b id="c2">0</b><span>Average days worked</span></div><div class="card"><b id="c3">0</b><span>Total working days</span></div><div class="card"><b id="c4">0</b><span>Leave / comp-off days</span></div></div>
-<p class="legend"><span><i style="background:var(--w)"></i>Working</span><span><i style="background:var(--n)"></i>Non-working day</span><span><i style="background:var(--o)"></i>Off</span><span><i style="background:var(--s)"></i>SL (sick leave)</span><span><i style="background:var(--p)"></i>PL (paid leave)</span><span><i style="background:var(--c)"></i>Comp-off</span></p>
-<div class="wrap"><table><thead><tr><th data-k="n">Name</th><th data-k="r">Region</th><th data-k="t">Role</th><th data-k="l">Cluster Head</th><th data-k="w">Days working</th><th data-k="lv">Leave</th><th data-k="o">Off</th><th>Nov 1 → 30 (hover a box)</th></tr></thead><tbody id="tb"></tbody></table></div>
-<script>
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqW6-ZOimhayTrKfbgyS2JDzBvg_RhBiPtkGKzOFGeuMmTpuCJneOLylkmUBksYm2d6VdY57-VmBNC/pub?output=csv";
+<p class="status" id="status"><b></b><span>Loading…</span></p>
 
-// Fallback initial dataset in case Google Sheet is offline/unreachable
+<div class="bar">
+  <label>Region<select id="reg"></select></label>
+  <label>Role
+    <select id="role">
+      <option value="">All roles</option>
+      <option>ED</option>
+      <option>Advisor</option>
+      <option>Para Planner</option>
+    </select>
+  </label>
+  <label>Who is working on<select id="date"><option value="">Any date</option></select></label>
+  <label>Search name<input id="q" placeholder="Type a name"></label>
+  <button id="clr">Reset</button>
+</div>
+
+<div class="cards">
+  <div class="card"><b id="c1">0</b><span>People shown</span></div>
+  <div class="card"><b id="c2">0</b><span>Average days worked</span></div>
+  <div class="card"><b id="c3">0</b><span>Total working days</span></div>
+  <div class="card"><b id="c4">0</b><span>Leave / comp-off days</span></div>
+</div>
+
+<p class="legend">
+  <span><i style="background:var(--w)"></i>Working</span>
+  <span><i style="background:var(--n)"></i>Non-working day</span>
+  <span><i style="background:var(--o)"></i>Off</span>
+  <span><i style="background:var(--s)"></i>SL (sick leave)</span>
+  <span><i style="background:var(--p)"></i>PL (paid leave)</span>
+  <span><i style="background:var(--c)"></i>Comp-off</span>
+</p>
+
+<div class="wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-k="n">Name</th>
+        <th data-k="r">Region</th>
+        <th data-k="t">Role</th>
+        <th data-k="l">Cluster Head</th>
+        <th data-k="w">Days working</th>
+        <th data-k="lv">Leave</th>
+        <th data-k="o">Off</th>
+        <th>Nov 1 → 30 (hover a box)</th>
+      </tr>
+    </thead>
+    <tbody id="tb"></tbody>
+  </table>
+</div>
+
+<script>
+// ============ SETTINGS ============
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqW6-ZOimhayTrKfbgyS2JDzBvg_RhBiPtkGKzOFGeuMmTpuCJneOLylkmUBksYm2d6VdY57-VmBNC/pub?output=csv";
+const REFRESH_MINUTES = 2;   // page re-checks the sheet this often
+const DAYS = 30;             // November has 30 days
+// ==================================
+
+// Fallback data, used only if the Google Sheet cannot be reached
 let D = [
   {"n":"Rushabh","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWWCCOOOPWWNNWWWWWWNCOWWWNNW"},
   {"n":"Shyam","r":"Mumbai","l":"Sanjay","t":"Advisor","d":"NWWWCWWOOOPPPNNWWWWWWWCWWWWWWC"},
@@ -115,104 +177,164 @@ let D = [
   {"n":"Karishma","r":"Hyderabad","l":"Anuj","t":"ED","d":"NWWWWWWOOOWWWWWCWWWWWWCWWWWWNC"}
 ];
 
-const LBL={W:'Working',S:'Sick leave',C:'Comp-off',P:'Paid leave',N:'Non-working day',O:'Off','-':'Not scheduled'};
-const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const dn=i=>DN[(i)%7]; // Nov 1 2026 is a Sunday
-const $=id=>document.getElementById(id);
+const LBL = {W:'Working', S:'Sick leave', C:'Comp-off', P:'Paid leave', N:'Non-working day', O:'Off', '-':'Not scheduled'};
+const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dn = i => DN[i % 7]; // Nov 1, 2026 is a Sunday
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function setStatus(kind, text){
+  const el = $('status');
+  el.className = 'status ' + kind;
+  el.querySelector('span').textContent = text;
+}
 
 function prepData(){
-  D.forEach(p=>{
-    p.d = (p.d || '').padEnd(30, '-').slice(0, 30).toUpperCase();
-    p.w=[...p.d].filter(x=>x=='W').length;
-    p.lv=[...p.d].filter(x=>'SCP'.includes(x)).length;
-    p.o=[...p.d].filter(x=>x=='O'||x=='N').length;
-    p.t2=p.t=='Para Planner'?'Para':p.t;
+  D.forEach(p => {
+    p.d = (p.d || '').padEnd(DAYS, '-').slice(0, DAYS).toUpperCase();
+    p.w  = [...p.d].filter(x => x === 'W').length;
+    p.lv = [...p.d].filter(x => 'SCP'.includes(x)).length;
+    p.o  = [...p.d].filter(x => x === 'O' || x === 'N').length;
+    p.t2 = p.t === 'Para Planner' ? 'Para' : p.t;
   });
   const currentReg = $('reg').value;
   $('reg').innerHTML = '';
-  $('reg').add(new Option('All regions',''));
-  [...new Set(D.map(p=>p.r))].filter(Boolean).sort().forEach(r=>$('reg').add(new Option(r,r)));
-  $('reg').value = currentReg || '';
+  $('reg').add(new Option('All regions', ''));
+  [...new Set(D.map(p => p.r))].filter(Boolean).sort().forEach(r => $('reg').add(new Option(r, r)));
+  $('reg').value = [...$('reg').options].some(o => o.value === currentReg) ? currentReg : '';
 }
 
-prepData();
+// Date dropdown
+for (let i = 0; i < DAYS; i++) $('date').add(new Option((i + 1) + ' Nov (' + dn(i) + ')', i));
 
-$('date').innerHTML = '<option value="">Any date</option>';
-for(let i=0;i<30;i++)$('date').add(new Option(${i+1} Nov (${dn(i)}),i));
-let sk='n',asc=true;
+let sk = 'n', asc = true;
 
 function render(){
- const r=$('reg').value,t=$('role').value,d=$('date').value,q=$('q').value.toLowerCase();
- let L=D.filter(p=>(!r||p.r==r)&&(!t||p.t==t)&&(!q||p.n.toLowerCase().includes(q))&&(d===''||p.d[+d]=='W'));
- L.sort((a,b)=>{let x=a[sk],y=b[sk];return (x>y?1:x<y?-1:0)*(asc?1:-1)});
- $('c1').textContent=L.length;const tot=L.reduce((s,p)=>s+p.w,0);$('c3').textContent=tot;
- $('c2').textContent=L.length?(tot/L.length).toFixed(1):0;$('c4').textContent=L.reduce((s,p)=>s+p.lv,0);
- $('tb').innerHTML=L.length?L.map(p=><tr><td><b>${p.n}</b></td><td>${p.r}</td><td><span class="tag ${p.t2}">${p.t}</span></td><td>${p.l||'–'}</td><td><span class="days">${p.w}</span><span class="meter"><u style="width:${p.w/30*100}%"></u></span></td><td>${p.lv}</td><td>${p.o}</td><td><div class="strip">${[...p.d].map((c,i)=><s class="${c}${d!==''&&+d==i?' hl':''}" title="${i+1} Nov ${dn(i)}: ${LBL[c]||c}"></s>).join('')}</div></td></tr>).join(''):'<tr><td colspan="8" class="empty">No one matches these filters.</td></tr>';
+  const r = $('reg').value, t = $('role').value, d = $('date').value, q = $('q').value.toLowerCase();
+  const L = D.filter(p =>
+    (!r || p.r === r) &&
+    (!t || p.t === t) &&
+    (!q || p.n.toLowerCase().includes(q)) &&
+    (d === '' || p.d[+d] === 'W')
+  );
+  L.sort((a, b) => {
+    const x = a[sk], y = b[sk];
+    return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1);
+  });
+
+  const tot = L.reduce((s, p) => s + p.w, 0);
+  $('c1').textContent = L.length;
+  $('c3').textContent = tot;
+  $('c2').textContent = L.length ? (tot / L.length).toFixed(1) : 0;
+  $('c4').textContent = L.reduce((s, p) => s + p.lv, 0);
+
+  $('tb').innerHTML = L.length ? L.map(p => `
+    <tr>
+      <td><b>${esc(p.n)}</b></td>
+      <td>${esc(p.r)}</td>
+      <td><span class="tag ${esc(p.t2)}">${esc(p.t)}</span></td>
+      <td>${esc(p.l) || '–'}</td>
+      <td><span class="days">${p.w}</span><span class="meter"><u style="width:${p.w / DAYS * 100}%"></u></span></td>
+      <td>${p.lv}</td>
+      <td>${p.o}</td>
+      <td><div class="strip">${[...p.d].map((c, i) =>
+        `<s class="${esc(c)}${d !== '' && +d === i ? ' hl' : ''}" title="${i + 1} Nov ${dn(i)}: ${LBL[c] || esc(c)}"></s>`
+      ).join('')}</div></td>
+    </tr>`).join('')
+    : '<tr><td colspan="8" class="empty">No one matches these filters.</td></tr>';
 }
 
-['reg','role','date'].forEach(i=>$(i).onchange=render);$('q').oninput=render;
-$('clr').onclick=()=>{$('reg').value='';$('role').value='';$('date').value='';$('q').value='';render()};
-document.querySelectorAll('th[data-k]').forEach(h=>h.onclick=()=>{const k=h.dataset.k;asc=sk==k?!asc:true;sk=k;render()});
+['reg', 'role', 'date'].forEach(i => $(i).onchange = render);
+$('q').oninput = render;
+$('clr').onclick = () => { $('reg').value = ''; $('role').value = ''; $('date').value = ''; $('q').value = ''; render(); };
+document.querySelectorAll('th[data-k]').forEach(h => h.onclick = () => {
+  const k = h.dataset.k;
+  asc = sk === k ? !asc : true;
+  sk = k;
+  render();
+});
 
-// Initial render displays immediate data
-render();
-
+// ---------- Google Sheet loading ----------
 function getVal(row, keys){
-  const found = Object.keys(row).find(k => keys.some(target => k.trim().toLowerCase() === target.toLowerCase()));
-  return found ? (row[found] || '').trim() : '';
+  const found = Object.keys(row).find(k => keys.includes(k.trim().toLowerCase()));
+  return found ? String(row[found] || '').trim() : '';
 }
 
-// Fetch live sheet updates
+// Works with headers like: 1, 01, Day 1, 1 Nov, 1-Nov, Nov 1, 1 Nov Sun, 01/11/2026
+function dayFromHeader(h){
+  const c = h.trim().toLowerCase();
+  let m;
+  if ((m = c.match(/^(?:day\s*)?(\d{1,2})$/))) return +m[1];
+  if ((m = c.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-\/,]*nov/))) return +m[1];
+  if ((m = c.match(/^nov\w*[\s\-\/,]*(\d{1,2})/))) return +m[1];
+  if ((m = c.match(/^(\d{1,2})\/11(?:\/|$)/))) return +m[1];
+  return null;
+}
+
+function rowToPerson(row){
+  const n = getVal(row, ['name', 'advisor', 'employee', 'person', 'n']);
+  const r = getVal(row, ['region', 'city', 'location', 'r']);
+  const t = getVal(row, ['role', 'designation', 't']);
+  const l = getVal(row, ['cluster head', 'lead', 'manager', 'tl', 'l']);
+
+  let d = getVal(row, ['schedule', 'roster', 'd']);
+
+  // No single schedule column? Stitch together the daily columns.
+  if (d.length < 5) {
+    const dayKeys = {};
+    Object.keys(row).forEach(k => {
+      const day = dayFromHeader(k);
+      if (day && day >= 1 && day <= DAYS && !(day in dayKeys)) dayKeys[day] = k;
+    });
+    const chars = [];
+    for (let day = 1; day <= DAYS; day++) {
+      const val = dayKeys[day] ? String(row[dayKeys[day]] || '').trim().toUpperCase() : '';
+      chars.push(val ? val[0] : '-');
+    }
+    d = chars.some(c => c !== '-') ? chars.join('') : '';
+  }
+  return { n, r, t, l, d };
+}
+
+let loadedOnce = false;
+
 async function fetchSheetData(){
   try {
-    const res = await fetch(SHEET_CSV_URL);
-    if (!res.ok) return;
+    const sep = SHEET_CSV_URL.includes('?') ? '&' : '?';
+    const res = await fetch(SHEET_CSV_URL + sep + 't=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
+
     Papa.parse(csv, {
       header: true,
       skipEmptyLines: true,
-      complete: function(results) {
-        if (!results.data || !results.data.length) return;
-
-        const parsed = results.data.map(row => {
-          const name = getVal(row, ['name', 'advisor', 'employee', 'person', 'n']);
-          const region = getVal(row, ['region', 'city', 'location', 'r']);
-          const role = getVal(row, ['role', 'designation', 't']);
-          const lead = getVal(row, ['cluster head', 'lead', 'manager', 'tl', 'l']);
-
-          let schedule = getVal(row, ['schedule', 'roster', 'd']);
-
-          // Stitch daily columns (e.g., Nov 1 to 30) if a single schedule column is absent
-          if (!schedule || schedule.length < 5) {
-            let dayChars = [];
-            const rowKeys = Object.keys(row);
-            for (let day = 1; day <= 30; day++) {
-              const dayKey = rowKeys.find(k => {
-                const clean = k.trim().toLowerCase();
-                return clean === ${day} || clean.startsWith(${day} `) || clean === `nov ${day} || clean === day ${day};
-              });
-              const val = dayKey ? (row[dayKey] || '').trim().toUpperCase() : '';
-              dayChars.push(val ? val[0] : '-');
-            }
-            if (dayChars.some(c => c !== '-')) {
-              schedule = dayChars.join('');
-            }
-          }
-
-          return { n: name, r: region, t: role, l: lead, d: schedule };
-        }).filter(p => p.n && p.d);
-
-        if (parsed.length > 0) {
+      complete: results => {
+        const parsed = (results.data || []).map(rowToPerson).filter(p => p.n && p.d);
+        if (parsed.length) {
           D = parsed;
           prepData();
           render();
+          loadedOnce = true;
+          setStatus('live', 'Live from Google Sheet · ' + parsed.length + ' people · updated ' + new Date().toLocaleTimeString());
+        } else {
+          throw new Error('No usable rows found in the sheet');
         }
-      }
+      },
+      error: err => { throw err; }
     });
   } catch (err) {
-    console.warn("Could not load Google Sheet data, using cached list.", err);
+    console.warn('Could not load Google Sheet data.', err);
+    setStatus('err', loadedOnce ? 'Could not refresh – showing last loaded data' : 'Sheet unreachable – showing saved backup data');
   }
 }
 
+// Start with backup data so the page is never empty, then load the live sheet
+prepData();
+render();
+setStatus('', 'Loading live data…');
 fetchSheetData();
-</script></body></html>
+setInterval(fetchSheetData, REFRESH_MINUTES * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchSheetData(); });
+</script>
+</body>
+</html>
