@@ -47,6 +47,9 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 .strip s.N{background:var(--n)}
 .strip s.O{background:var(--o)}
 .hl{outline:2px solid var(--ac);outline-offset:1px}
+.strip s.hol{box-shadow:inset 0 -4px 0 var(--ac)}
+.note{font-size:12px;color:var(--mu);margin:0 0 10px}
+.note i{display:inline-block;width:12px;height:4px;background:var(--ac);vertical-align:2px;margin-right:4px}
 .empty{padding:24px;text-align:center;color:var(--mu)}
 </style>
 </head>
@@ -57,6 +60,7 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 
 <div class="bar">
   <label>Region<select id="reg"></select></label>
+  <label>Cluster Head<select id="lead"></select></label>
   <label>Role
     <select id="role">
       <option value="">All roles</option>
@@ -73,8 +77,8 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 <div class="cards">
   <div class="card"><b id="c1">0</b><span>People shown</span></div>
   <div class="card"><b id="c2">0</b><span>Average days worked</span></div>
-  <div class="card"><b id="c3">0</b><span>Total working days</span></div>
   <div class="card"><b id="c4">0</b><span>Leave / comp-off days</span></div>
+  <div class="card"><b id="c5">20</b><span>Total working days in Nov</span></div>
 </div>
 
 <p class="legend">
@@ -85,6 +89,8 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
   <span><i style="background:var(--p)"></i>PL (paid leave)</span>
   <span><i style="background:var(--c)"></i>Comp-off</span>
 </p>
+
+<p class="note"><i></i>Company off days (marked with a blue underline): all Sundays, 2nd &amp; 4th Saturday (14, 28 Nov), Diwali holiday (8, 9, 10 Nov), Guru Nanak Jayanti (24 Nov).</p>
 
 <div class="wrap">
   <table>
@@ -106,7 +112,7 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 
 <script>
 // ============ SETTINGS ============
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqW6-ZOimhayTrKfbgyS2JDzBvg_RhBiPtkGKzOFGeuMmTpuCJneOLylkmUBksYm2d6VdY57-VmBNC/pub?output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqW6-ZOimhayTrKfbgyS2JDzBvg_RhBiPtkGKz0FGeuMmTpuCJneOLylkmUBksYm2d6VdY57-VmBNC/pub?gid=2110293859&single=true&output=csv";
 const REFRESH_MINUTES = 2;   // page re-checks the sheet this often
 const DAYS = 30;             // November has 30 days
 // ==================================
@@ -180,6 +186,17 @@ let D = [
 const LBL = {W:'Working', S:'Sick leave', C:'Comp-off', P:'Paid leave', N:'Non-working day', O:'Off', '-':'Not scheduled'};
 const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const dn = i => DN[i % 7]; // Nov 1, 2026 is a Sunday
+
+// Company calendar (index 0 = 1 Nov)
+const HOLIDAYS = {7:'Diwali holiday', 8:'Diwali holiday', 9:'Diwali holiday', 23:'Guru Nanak Jayanti'};
+function offReason(i){
+  if (HOLIDAYS[i]) return HOLIDAYS[i];
+  if (i % 7 === 0) return 'Sunday off';
+  if (i % 7 === 6) { const nth = Math.floor(i / 7) + 1; if (nth === 2 || nth === 4) return nth + (nth === 2 ? 'nd' : 'th') + ' Saturday off'; }
+  return '';
+}
+let WORKING_DAYS = 0;
+for (let i = 0; i < 30; i++) if (!offReason(i)) WORKING_DAYS++;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -197,6 +214,12 @@ function prepData(){
     p.o  = [...p.d].filter(x => x === 'O' || x === 'N').length;
     p.t2 = p.t === 'Para Planner' ? 'Para' : p.t;
   });
+  const currentLead = $('lead').value;
+  $('lead').innerHTML = '';
+  $('lead').add(new Option('All cluster heads', ''));
+  [...new Set(D.map(p => p.l))].filter(Boolean).sort().forEach(l => $('lead').add(new Option(l, l)));
+  if (D.some(p => !p.l)) $('lead').add(new Option('(No cluster head)', '__none'));
+  $('lead').value = [...$('lead').options].some(o => o.value === currentLead) ? currentLead : '';
   const currentReg = $('reg').value;
   $('reg').innerHTML = '';
   $('reg').add(new Option('All regions', ''));
@@ -205,14 +228,16 @@ function prepData(){
 }
 
 // Date dropdown
-for (let i = 0; i < DAYS; i++) $('date').add(new Option((i + 1) + ' Nov (' + dn(i) + ')', i));
+for (let i = 0; i < DAYS; i++) $('date').add(new Option((i + 1) + ' Nov (' + dn(i) + ')' + (offReason(i) ? ' – ' + offReason(i) : ''), i));
+$('c5').textContent = WORKING_DAYS;
 
 let sk = 'n', asc = true;
 
 function render(){
-  const r = $('reg').value, t = $('role').value, d = $('date').value, q = $('q').value.toLowerCase();
+  const r = $('reg').value, ld = $('lead').value, t = $('role').value, d = $('date').value, q = $('q').value.toLowerCase();
   const L = D.filter(p =>
     (!r || p.r === r) &&
+    (!ld || (ld === '__none' ? !p.l : p.l === ld)) &&
     (!t || p.t === t) &&
     (!q || p.n.toLowerCase().includes(q)) &&
     (d === '' || p.d[+d] === 'W')
@@ -224,7 +249,6 @@ function render(){
 
   const tot = L.reduce((s, p) => s + p.w, 0);
   $('c1').textContent = L.length;
-  $('c3').textContent = tot;
   $('c2').textContent = L.length ? (tot / L.length).toFixed(1) : 0;
   $('c4').textContent = L.reduce((s, p) => s + p.lv, 0);
 
@@ -234,19 +258,19 @@ function render(){
       <td>${esc(p.r)}</td>
       <td><span class="tag ${esc(p.t2)}">${esc(p.t)}</span></td>
       <td>${esc(p.l) || '–'}</td>
-      <td><span class="days">${p.w}</span><span class="meter"><u style="width:${p.w / DAYS * 100}%"></u></span></td>
+      <td><span class="days">${p.w}</span><span class="meter"><u style="width:${Math.min(100, p.w / WORKING_DAYS * 100)}%"></u></span></td>
       <td>${p.lv}</td>
       <td>${p.o}</td>
       <td><div class="strip">${[...p.d].map((c, i) =>
-        `<s class="${esc(c)}${d !== '' && +d === i ? ' hl' : ''}" title="${i + 1} Nov ${dn(i)}: ${LBL[c] || esc(c)}"></s>`
+        `<s class="${esc(c)}${offReason(i) ? ' hol' : ''}${d !== '' && +d === i ? ' hl' : ''}" title="${i + 1} Nov ${dn(i)}: ${LBL[c] || esc(c)}${offReason(i) ? ' · ' + offReason(i) : ''}"></s>`
       ).join('')}</div></td>
     </tr>`).join('')
     : '<tr><td colspan="8" class="empty">No one matches these filters.</td></tr>';
 }
 
-['reg', 'role', 'date'].forEach(i => $(i).onchange = render);
+['reg', 'lead', 'role', 'date'].forEach(i => $(i).onchange = render);
 $('q').oninput = render;
-$('clr').onclick = () => { $('reg').value = ''; $('role').value = ''; $('date').value = ''; $('q').value = ''; render(); };
+$('clr').onclick = () => { $('reg').value = ''; $('lead').value = ''; $('role').value = ''; $('date').value = ''; $('q').value = ''; render(); };
 document.querySelectorAll('th[data-k]').forEach(h => h.onclick = () => {
   const k = h.dataset.k;
   asc = sk === k ? !asc : true;
@@ -298,12 +322,32 @@ function rowToPerson(row){
 
 let loadedOnce = false;
 
+// Tries the sheet directly first, then falls back to public CORS proxies
+async function fetchCsvText(){
+  const sep = SHEET_CSV_URL.includes('?') ? '&' : '?';
+  const bust = sep + 'cb=' + Date.now();
+  const attempts = [
+    SHEET_CSV_URL,
+    SHEET_CSV_URL + bust,
+    'https://corsproxy.io/?' + encodeURIComponent(SHEET_CSV_URL + bust),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_CSV_URL + bust)
+  ];
+  let lastErr;
+  for (const url of attempts) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (!text || /^\s*<(!doctype|html)/i.test(text)) throw new Error('Sheet returned a web page, not CSV (is it published as CSV?)');
+      return text;
+    } catch (e) { lastErr = e; console.warn('Fetch failed for', url, e); }
+  }
+  throw lastErr || new Error('All attempts failed');
+}
+
 async function fetchSheetData(){
   try {
-    const sep = SHEET_CSV_URL.includes('?') ? '&' : '?';
-    const res = await fetch(SHEET_CSV_URL + sep + 't=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
+    const csv = await fetchCsvText();
 
     Papa.parse(csv, {
       header: true,
@@ -324,7 +368,7 @@ async function fetchSheetData(){
     });
   } catch (err) {
     console.warn('Could not load Google Sheet data.', err);
-    setStatus('err', loadedOnce ? 'Could not refresh – showing last loaded data' : 'Sheet unreachable – showing saved backup data');
+    setStatus('err', (loadedOnce ? 'Could not refresh – showing last loaded data' : 'Sheet unreachable – showing saved backup data') + ' (' + (err && err.message ? err.message : 'unknown error') + ')');
   }
 }
 
