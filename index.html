@@ -47,6 +47,16 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
 .strip s.N{background:var(--n)}
 .strip s.O{background:var(--o)}
 .strip s.A{background:var(--o)}
+.codes{position:relative;display:inline-block;margin:0 0 10px}
+.codes-btn{align-self:auto;font-weight:600;cursor:help}
+.codes-box{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:30;width:min(270px,86vw);background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
+.codes:hover .codes-box,.codes:focus-within .codes-box{display:block}
+.codes-title{font-weight:700;font-size:16px;color:var(--ac);padding:8px 12px;border-bottom:1px solid var(--bd)}
+.codes-row{display:grid;grid-template-columns:64px 1fr;border-bottom:1px solid var(--bd);min-height:34px}
+.codes-row:last-child{border-bottom:0}
+.codes-row b{display:flex;align-items:center;justify-content:center;font-size:15px}
+.codes-row span{padding:7px 10px;font-size:13px;display:flex;align-items:center}
+.cW{background:var(--w);color:#fff}.cS{background:var(--s);color:#000}.cP{background:var(--p);color:#fff}.cC{background:var(--c);color:#fff}.cO{background:var(--o);color:#fff}.cN{background:var(--n);color:#000}
 .hl{outline:2px solid var(--ac);outline-offset:1px}
 .strip s.hol{box-shadow:inset 0 -4px 0 var(--ac)}
 .note{font-size:12px;color:var(--mu);margin:0 0 10px}
@@ -82,11 +92,18 @@ th{font-size:12px;color:var(--mu);cursor:pointer;user-select:none;position:stick
   <div class="card"><b id="c5">20</b><span>Total working days in Nov</span></div>
 </div>
 
-<p class="legend">
-  <span><i style="background:var(--w)"></i>Working</span>
-  <span><i style="background:var(--o)"></i>Not working (leave / off)</span>
-  <span><i style="background:var(--n)"></i>Company off day (not working)</span>
-</p>
+<div class="codes">
+  <button type="button" class="codes-btn" aria-describedby="codesBox">Day codes <span aria-hidden="true">ⓘ</span></button>
+  <div class="codes-box" id="codesBox" role="tooltip">
+    <div class="codes-title">Day codes</div>
+    <div class="codes-row"><b class="cW">W</b><span>Working</span></div>
+    <div class="codes-row"><b class="cS">S</b><span>Sick leave (SL)</span></div>
+    <div class="codes-row"><b class="cP">P</b><span>Paid leave (PL)</span></div>
+    <div class="codes-row"><b class="cC">C</b><span>Comp-off</span></div>
+    <div class="codes-row"><b class="cO">O</b><span>Off - Holiday</span></div>
+    <div class="codes-row"><b class="cN">N</b><span>Non-working / company off day</span></div>
+  </div>
+</div>
 
 <p class="note"><i></i>Company off days (marked with a blue underline): all Sundays, 2nd &amp; 4th Saturday (14, 28 Nov), Diwali holiday (8, 9, 10 Nov), Guru Nanak Jayanti (24 Nov).</p>
 
@@ -118,7 +135,7 @@ const DAYS = 30;             // November has 30 days
 // Roster data is loaded live from the Google Sheet
 let D = [];
 
-const LBL = {W:'Working', S:'Sick leave', C:'Comp-off', P:'Paid leave', N:'Company off day', A:'Not working (leave / off)', O:'Off', '-':'Not scheduled'};
+const LBL = {W:'Working', S:'Sick leave (SL)', C:'Comp-off', P:'Paid leave (PL)', N:'Company off day', A:'Not working (leave / off)', O:'Off - Holiday', '-':'Not scheduled'};
 const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const dn = i => DN[i % 7]; // Nov 1, 2026 is a Sunday
 
